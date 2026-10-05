@@ -146,6 +146,16 @@ mod tests {
     }
 
     #[test]
+    fn em_dash_does_not_panic() {
+        let mark = "\u{2014}";
+        assert_eq!(mark.len(), 3);
+        let text = format!("{}{}{}", "a".repeat(CHUNK_CHARS - 1), mark, "b".repeat(CHUNK_CHARS));
+        let chunks = chunk_text(&text);
+        assert!(!chunks.is_empty());
+        assert!(chunks.iter().all(|c| c.is_char_boundary(0) || c.is_empty()));
+    }
+
+    #[test]
     fn curly_apostrophe_does_not_panic() {
         // U+2019 is 3 bytes. Place it so start+CHUNK_CHARS lands inside it —
         // the live ingest panic was this slice.

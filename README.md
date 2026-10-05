@@ -38,11 +38,12 @@ You only need to do this once.
    the name was seen in, betweenness next to degree, and the raw payload.
    After a retrieve, a passage that was a hit also shows its raw score and its
    fused score.
-5. Two sliders sit on the crystal. **Hub spread (LinLog)** runs from 1 to 15
-   and pushes highly connected nodes apart; 1 is the floor, because 0 collapses
-   the core. **Glow** runs from 0 to 1.5 and scales edge haze. Each folder
-   remembers its own pair. The starting pair is 4 and 0.45, not a claim that
-   every corpus wants those numbers.
+5. Two sliders sit on the crystal. **Hub spread (LinLog)** runs from 1 to 15.
+   It pushes highly connected nodes apart, and it widens the ring of chunks
+   around each file. 1 is the floor, because 0 collapses the core. **Glow**
+   runs from 0 to 1.5 and scales edge haze. Each folder remembers its own
+   pair. The starting pair is 4 and 0.45, not a claim that every corpus
+   wants those numbers.
 6. Hop and Blast walk the edges from the focused node (one step, or two).
    Ask can call the same two walks, plus retrieve, when the endpoint accepts
    tool calls. An endpoint that refuses tools still answers from the excerpts.
@@ -107,7 +108,7 @@ npm install
 CI=true npx tauri build --bundles app
 hdiutil create -volname crystal-lab \
   -srcfolder src-tauri/target/release/bundle/macos/crystal-lab.app \
-  -ov -format UDZO src-tauri/target/release/bundle/dmg/crystal-lab_0.4.1_aarch64.dmg
+  -ov -format UDZO src-tauri/target/release/bundle/dmg/crystal-lab_0.4.2_aarch64.dmg
 ```
 
 `tauri build --bundles dmg` currently cleans the `.app` and has packed a thin image
@@ -120,8 +121,8 @@ Adding Intel is another binary in that folder, not a rewrite.
 ## Size of this dmg
 
 ```
-ls -l src-tauri/target/release/bundle/dmg/crystal-lab_0.4.1_aarch64.dmg
-# 134256249 bytes · 134.3 MB SI / 128.0 MiB   (2026-10-05)
+ls -l src-tauri/target/release/bundle/dmg/crystal-lab_0.4.2_aarch64.dmg
+# 134257741 bytes · 134.3 MB SI / 128.0 MiB   (2026-10-05)
 
 du -sh src-tauri/target/release/bundle/macos/crystal-lab.app
 # 188M

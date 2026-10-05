@@ -156,26 +156,6 @@ impl Store {
         Ok(())
     }
 
-    pub fn recreate_collection(&self) -> Result<(), String> {
-        let url = format!("{}/collections/{COLLECTION}", self.qdrant);
-        let _ = send_json("DELETE", &url, json!({}));
-        // ureq DELETE helper: send_json only PUT/POST. Use agent.
-        let _ = agent_long()
-            .delete(&url)
-            .call();
-        send_json(
-            "PUT",
-            &url,
-            json!({ "vectors": { "size": self.dims, "distance": "Cosine" } }),
-        )?;
-        let _ = send_json(
-            "PUT",
-            &format!("{url}/index"),
-            json!({ "field_name": "folder", "field_schema": "keyword" }),
-        );
-        Ok(())
-    }
-
     fn prefix(&self, text: &str, query: bool) -> String {
         if self.is_nomic() {
             if query {
@@ -227,20 +207,6 @@ impl Store {
             }
         }
         Ok(out)
-    }
-
-    pub fn scroll_folder_payloads(&self, folder: &str) -> Result<Vec<Value>, String> {
-        let j = send_json(
-            "POST",
-            &format!("{}/collections/{COLLECTION}/points/scroll", self.qdrant),
-            json!({
-                "filter": { "must": [{ "key": "folder", "match": { "value": folder } }] },
-                "limit": 400,
-                "with_payload": true,
-                "with_vector": false
-            }),
-        )?;
-        Ok(j["result"]["points"].as_array().cloned().unwrap_or_default())
     }
 
     pub fn delete_folder_points(&self, folder: &str) -> Result<(), String> {

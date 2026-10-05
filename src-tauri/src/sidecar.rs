@@ -5,6 +5,7 @@ use std::process::{Child, Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
+#[cfg_attr(not(debug_assertions), allow(dead_code))]
 pub fn qdrant_sidecar_name() -> &'static str {
     #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
     {

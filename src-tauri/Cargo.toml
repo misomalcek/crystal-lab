@@ -1,6 +1,6 @@
 [package]
 name = "crystal-lab"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
 description = "Point at a folder. Local graph, retrieve, hop, blast — Qdrant and nomic travel with the app."
 

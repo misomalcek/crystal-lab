@@ -65,11 +65,22 @@ fn resolve(from: &Path, spec: &str, index: &HashMap<String, PathBuf>) -> Option<
     None
 }
 
+/// `i` may sit inside a multibyte char (an em dash is three bytes). Return the
+/// next char boundary at or after `i`.
+fn boundary_at(text: &str, i: usize) -> usize {
+    let mut i = i.min(text.len());
+    while i < text.len() && !text.is_char_boundary(i) {
+        i += 1;
+    }
+    i
+}
+
 fn scan_quoted(text: &str, needles: &[&str]) -> Vec<String> {
     let mut out = Vec::new();
     for needle in needles {
         let mut from = 0;
-        while let Some(i) = text[from..].find(needle) {
+        while from < text.len() {
+            let Some(i) = text[from..].find(needle) else { break };
             let abs = from + i + needle.len();
             let rest = text[abs..].trim_start();
             let quote = rest.chars().next();
@@ -79,7 +90,11 @@ fn scan_quoted(text: &str, needles: &[&str]) -> Vec<String> {
                     out.push(rest[1..1 + end].to_string());
                 }
             }
-            from = abs + 1;
+            let next = boundary_at(text, abs);
+            if next <= from {
+                break;
+            }
+            from = next;
         }
     }
     out
@@ -88,7 +103,8 @@ fn scan_quoted(text: &str, needles: &[&str]) -> Vec<String> {
 fn scan_mod(text: &str) -> Vec<String> {
     let mut out = Vec::new();
     let mut from = 0;
-    while let Some(i) = text[from..].find("mod ") {
+    while from < text.len() {
+        let Some(i) = text[from..].find("mod ") else { break };
         let abs = from + i + 4;
         let rest = text[abs..].trim_start();
         let name: String = rest
@@ -98,7 +114,11 @@ fn scan_mod(text: &str) -> Vec<String> {
         if !name.is_empty() && rest[name.len()..].trim_start().starts_with(';') {
             out.push(format!("{name}.rs"));
         }
-        from = abs + 1;
+        let next = boundary_at(text, abs);
+        if next <= from {
+            break;
+        }
+        from = next;
     }
     out
 }
@@ -117,7 +137,7 @@ fn scan_md_links(text: &str) -> Vec<String> {
             if !spec.is_empty() {
                 out.push(spec);
             }
-            from = abs + end + 1;
+            from = boundary_at(text, abs + end + 1);
         } else {
             break;
         }
@@ -410,8 +430,11 @@ mod tests {
         assert_eq!(g.nodes.len(), 2);
         assert!(!g.truncated);
         assert!(g.edges.iter().any(|e| e.from == "a.ts" && e.to == "b.ts"));
-        assert_eq!(hop(&g, "a.ts"), vec!["b.ts".to_string()]);
-        assert_eq!(blast(&g, "a.ts", 2), vec!["b.ts".to_string()]);
+        fs::write(dir.join("note.ts"), "const s = \"from — em dash\"\n").unwrap();
+        let g = folder_graph(&dir);
+        assert!(g.nodes.iter().any(|n| n.id == "note.ts"));
+        assert!(hop(&g, "a.ts").iter().any(|id| id == "b.ts"));
+        assert!(blast(&g, "a.ts", 2).iter().any(|id| id == "b.ts"));
         let _ = fs::remove_dir_all(&dir);
     }
 

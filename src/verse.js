@@ -216,7 +216,8 @@ function layout3d(nodes, edges, hubSpread) {
     const hub = parent.get(rel);
     if (!hub) continue;
     const n = list.length;
-    const r = 14 + Math.min(n, 40) * 0.35;
+    const base = 16 + Math.min(n, 40) * 0.5;
+    const r = Math.max(13, base * (k / 4));
     list.forEach((node, i) => {
       const phi = Math.acos(1 - (2 * (i + 0.5)) / Math.max(n, 1));
       const theta = golden * i;

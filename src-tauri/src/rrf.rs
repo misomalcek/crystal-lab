@@ -10,6 +10,7 @@ pub const RRF_K: f64 = 60.0;
 
 /// Fuse ranked lists. Lists are pre-sorted, best first. The first sighting
 /// of an item is the one kept, so put the list whose payload you prefer first.
+#[allow(dead_code)] // release builds call rrf_fuse_scored; this wrapper is what the tests pin
 pub fn rrf_fuse<T, F: Fn(&T) -> String>(
     lists: &[Vec<T>],
     id_of: F,

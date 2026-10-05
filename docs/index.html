@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>crystal-lab — a local crystal for a folder</title>
+    <meta name="description" content="Point crystal-lab at a folder of notes or a small repository. It builds a 3D graph, embeds the text on your machine, and retrieves. Nothing else to install." />
+    <style>
+      :root {
+        --bg: #111412; --fg: #e8eee6; --muted: #8a938c; --gold: #d4a84b;
+        --green: #7dba6a; --line: #2a312c; --panel: #1c211d;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--fg);
+        font: 17px/1.5 ui-sans-serif, system-ui, sans-serif; }
+      a { color: var(--gold); }
+      header, main, footer { width: min(820px, calc(100% - 40px)); margin: 0 auto; }
+      header { padding: 48px 0 12px; }
+      h1 { font-size: 40px; letter-spacing: 0.04em; font-weight: 600; margin: 0 0 8px; }
+      h2 { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold);
+        margin: 36px 0 10px; font-weight: 600; }
+      p, li { color: #d5ddd4; }
+      .lede { font-size: 20px; color: var(--fg); max-width: 40em; }
+      .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 22px 0; }
+      .btn { display: inline-block; background: var(--gold); color: #1a1408; text-decoration: none;
+        font-weight: 650; padding: 12px 18px; border-radius: 8px; }
+      .btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+      .note { color: var(--muted); font-size: 14px; }
+      section { border-top: 1px solid var(--line); }
+      ul { padding-left: 1.2em; }
+      li { margin: 6px 0; }
+      code, .cap { font: 13px/1.45 ui-monospace, monospace; color: #c5cdc6; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+      .card h3 { margin: 0 0 6px; font-size: 16px; }
+      .card p { margin: 0; font-size: 15px; }
+      footer { padding: 28px 0 48px; color: var(--muted); font-size: 14px; }
+      @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>crystal-lab</h1>
+      <p class="lede">Point it at a folder. It builds a 3D crystal from the files, embeds the text on your machine, and lets you retrieve, hop, and ask.</p>
+      <div class="row">
+        <a class="btn" href="https://github.com/misomalcek/crystal-lab/releases/download/v0.4.2/crystal-lab_0.4.2_aarch64.dmg">Download for Apple Silicon</a>
+        <a class="ghost btn" href="https://github.com/misomalcek/crystal-lab">Source</a>
+      </div>
+      <p class="note">macOS on Apple Silicon. Version 0.4.2. The disk image is about 134 MB and the app is 188 MB after install. Not notarized: the first launch is right-click, then Open. Intel and Windows are not in this build. MIT. No account, no telemetry. Nothing leaves the machine unless you set an endpoint yourself.</p>
+    </header>
+    <main>
+      <section>
+        <h2>What you can do with it</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>A folder of notes</h3>
+            <p>Markdown, text, HTML, and the text layer of a PDF become one crystal. The same name in two files is one node.</p>
+          </div>
+          <div class="card">
+            <h3>A small repository</h3>
+            <p>Rust, TypeScript, JavaScript, Python, Go, Java, and C/C++ are read as text. Import edges are drawn when the target file is in the folder.</p>
+          </div>
+          <div class="card">
+            <h3>Retrieve across files</h3>
+            <p>Three ranked lists — vector, lexical, and a walk along relates-to — fuse by rank. Reciprocal rank fusion, k = 60.</p>
+          </div>
+          <div class="card">
+            <h3>Ask your own model</h3>
+            <p>An OpenAI-compatible endpoint, cloud or local, can name types and answer from the folder. Without one, the graph and retrieve still run.</p>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>How a folder becomes a crystal</h2>
+        <ul>
+          <li>Pick a folder. Files, imports, and sibling links draw first. Ingest hangs the text chunks off each file.</li>
+          <li>Names are extracted without a model. One normalized spelling is one node. <code>mentions</code> ties it to the files. <code>relates_to</code> links two names that share a chunk.</li>
+          <li>A spelling fold is kept as a merge note. Names that embed as near-duplicates but do not share a spelling stay two nodes, flagged <code>conflicts_with</code>. A flag is recoverable. A silent merge is not.</li>
+          <li>Click a node. The card shows type, files, neighbors by weight, the passages, betweenness next to degree, and the raw payload.</li>
+          <li>Hub spread (LinLog), from 1 to 15, pushes connected nodes apart and widens the chunk ring around each file. Glow, from 0 to 1.5, scales the edge haze. Each folder remembers its own pair.</li>
+          <li>Hop is one step. Blast is two. Ask can call those walks, plus retrieve, when the endpoint accepts tool calls.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Limits</h2>
+        <p>This is free, and it is for a folder of notes or a small repository. It is not for a massive codebase. The stop is in the app, not in Qdrant. Past the cap, ingest finishes and the log says what was cut.</p>
+        <ul>
+          <li><span class="cap">400</span> chunks for the whole folder, <span class="cap">80</span> for one file, about <span class="cap">1 800</span> characters a chunk.</li>
+          <li><span class="cap">400</span> file nodes drawn. <span class="cap">10 000</span> files walked.</li>
+          <li>One text file up to 2 MB. One PDF up to 32 MB, text layer only.</li>
+          <li>Images are nodes, with no OCR. Office files are counted, not parsed.</li>
+          <li><code>node_modules</code>, <code>target</code>, <code>dist</code>, <code>.git</code>, and hidden directories are skipped.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Concepts and the stack</h2>
+        <ul>
+          <li>Tauri 2, Rust, a small Vite front end, three.js for the verse.</li>
+          <li>Qdrant and nomic-embed-text v1.5 (768 dimensions) travel inside the app. llama.cpp serves the embedder. Ports are chosen free at launch.</li>
+          <li>Reciprocal rank fusion, Cormack, Clarke, and Buettcher, 2009. Fusion reads rank, never the cosine and never the edge weight.</li>
+          <li>The third list is the Zep / Graphiti pattern: walk <code>relates_to</code> by weight, then fuse. This build does that rank fusion only, not the extra MMR or node-distance stages.</li>
+          <li>Hub spread is degree-scaled repulsion, the LinLog idea: a hub pushes harder than a leaf. Betweenness is shown on the card as a bridge score, and it is not used to delete nodes.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Who made it</h2>
+        <p>Michal directed it, tested it, and decided what shipped. None of the application code was written by hand. The work was a sequence of AI seats, each given a job.</p>
+        <ul>
+          <li>Claude Code Opus 5, and Cursor Opus 5, set the initial design and the architecture, and wrote the assignments in hive chat that the build followed.</li>
+          <li>Grok 4.6, in Cursor, cut the earlier versions of the crystal.</li>
+          <li>Grok 4.7, in Cursor as Codemaster, built the app as it ships: the standalone engines, the entity graph, the detail card, hub spread, and this release.</li>
+        </ul>
+        <p>The point of saying so is the method. A person can aim a build, keep the constraints, and ship, with the code coming from the seats and the judgment staying with the person.</p>
+      </section>
+    </main>
+    <footer>
+      Provided as is. The LICENSE file in the repository is the binding version.
+      Genuine feedback: open an issue on the repository.
+    </footer>
+  </body>
+</html>
