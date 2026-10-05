@@ -1,0 +1,24 @@
+[package]
+name = "crystal-lab"
+version = "0.4.1"
+edition = "2021"
+description = "Point at a folder. Local graph, retrieve, hop, blast — Qdrant and nomic travel with the app."
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "2.12", features = ["json"] }
+sha2 = "0.10"
+pdf-extract = "0.7"
+regex = "1"
+tokio = { version = "1", default-features = false, features = ["sync"] }
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[lib]
+name = "crystal_lab_lib"
+crate-type = ["lib", "cdylib", "staticlib"]

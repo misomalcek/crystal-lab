@@ -1,0 +1,14 @@
+node_modules
+dist
+src-tauri/target
+src-tauri/gen
+.DS_Store
+.claude
+.qdrant-initialized
+snapshots
+src-tauri/.qdrant-initialized
+src-tauri/snapshots
+# Over GitHub's comfortable blob size. They ship inside the release dmg.
+src-tauri/binaries/
+src-tauri/resources/embed-runtime/qdrant
+src-tauri/resources/models/*.gguf

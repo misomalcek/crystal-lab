@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>crystal-lab</title>
+    <style>
+      :root {
+        --bg: #111412; --fg: #e8eee6; --muted: #8a938c; --gold: #d4a84b;
+        --green: #7dba6a; --red: #d07060; --line: #2a312c; --panel: #1c211d;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--fg);
+        font: 15px/1.4 ui-sans-serif, system-ui, sans-serif; }
+      body { display: flex; flex-direction: column; }
+      header, .row, #path { flex-shrink: 0; }
+      header { display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 20px 8px; border-bottom: 1px solid var(--line); gap: 12px; }
+      h1 { font-size: 18px; font-weight: 600; margin: 0; letter-spacing: 0.04em; }
+      #status { font-size: 12px; color: var(--muted); flex: 1; }
+      #status.ok { color: var(--green); }
+      #status.bad { color: var(--red); }
+      #status.wait { color: var(--gold); }
+      .iconbtn { width: 36px; height: 36px; padding: 0; display: grid; place-items: center;
+        background: var(--panel); border: 1px solid var(--line); color: var(--fg); cursor: pointer; }
+      #btnEndpoint { border-radius: 18px; }
+      #btnPorts { border-radius: 4px; }
+      .iconbtn:hover { border-color: var(--gold); color: var(--gold); }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px; align-items: center; flex-shrink: 0; }
+      button, input { font: inherit; background: var(--panel); color: var(--fg);
+        border: 1px solid var(--line); padding: 7px 12px; border-radius: 6px; }
+      button { cursor: pointer; }
+      button:hover { border-color: var(--gold); }
+      button:disabled { opacity: 0.45; cursor: default; }
+      input { min-width: 180px; flex: 1; }
+      #path { color: var(--muted); font-size: 12px; padding: 0 20px; word-break: break-all; flex-shrink: 0; }
+      main { display: grid; grid-template-columns: 1fr 340px; gap: 0; flex: 1; min-height: 0; }
+      #stage { position: relative; min-height: 0; background: #0c0f0d; }
+      canvas { width: 100%; height: 100%; display: block; }
+      #flight { position: absolute; top: 10px; left: 10px; z-index: 2; font: 11px/1.2 ui-monospace, monospace; }
+      #tune { position: absolute; left: 10px; bottom: 10px; z-index: 4; width: 220px;
+        background: rgba(22,26,23,0.9); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+      #tune label { display: block; font: 10px/1.3 ui-monospace, monospace; color: var(--muted); margin-bottom: 6px; }
+      #tune b { float: right; color: var(--gold); font-weight: 600; }
+      #tune input[type="range"] { width: 100%; margin-top: 3px; accent-color: var(--gold); }
+      #mpcHud { display: none; pointer-events: none; position: absolute; inset: 0; z-index: 3; }
+      #mpcHud .scan { position: absolute; inset: 0; opacity: 0.18;
+        background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, #000 3px, transparent 4px); }
+      #mpcHud .title { position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        font: 13px/1.4 ui-monospace, monospace; color: #22d3ee; letter-spacing: 0.35em; }
+      #mpcHud .score { position: absolute; top: 36px; left: 50%; transform: translateX(-50%);
+        font: 12px ui-monospace, monospace; color: #fbbf24; }
+      main > aside { border-left: 1px solid var(--line); padding: 12px 16px; overflow: auto; }
+      aside h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); margin: 0 0 8px; }
+      .hit { margin: 0 0 10px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; }
+      .hit b { color: var(--gold); font-weight: 600; font-size: 12px; }
+      .hit p { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+      .tag { font: 10px ui-monospace, monospace; color: #22d3ee; margin-right: 6px; }
+      .detail { position: absolute; top: 12px; right: 12px; z-index: 4; width: min(340px, 92%);
+        max-height: calc(100% - 24px); overflow: auto; background: #161a17;
+        border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 14px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
+      .detail.hidden { display: none; }
+      .detail h3 { margin: 0; font-size: 14px; line-height: 1.3; }
+      .detail .kicker { font: 10px ui-monospace, monospace; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--gold); }
+      .detail .meta { color: var(--muted); font-size: 12px; margin: 6px 0; }
+      .detail button.x { position: absolute; top: 8px; right: 8px; padding: 2px 8px; }
+      .detail ul { margin: 4px 0 8px; padding-left: 16px; }
+      .detail li { font-size: 12px; margin: 2px 0; }
+      .detail details { margin-top: 8px; }
+      .detail summary { cursor: pointer; color: var(--muted); font-size: 11px; letter-spacing: 0.06em;
+        text-transform: uppercase; }
+      .detail pre { white-space: pre-wrap; font: 11px/1.35 ui-monospace, monospace; color: #c5cdc6; }
+      .flag { color: #fbbf24; }
+      #log { flex: 0 0 auto; min-height: 2.6em; max-height: 7em; overflow: auto;
+        font-size: 12px; color: var(--gold); white-space: pre-wrap; padding: 8px 20px;
+        border-top: 1px solid var(--line); background: #161a17; }
+      .overlay { position: fixed; inset: 0; background: rgba(8,10,9,0.72); z-index: 20;
+        display: none; place-items: center; }
+      .overlay.show { display: grid; }
+      .sheet { width: min(520px, 92vw); background: #161a17; border: 1px solid var(--line);
+        border-radius: 12px; padding: 22px; }
+      .sheet h3 { margin: 0 0 10px; font-size: 16px; }
+      .sheet p { color: var(--muted); font-size: 14px; }
+      .sheet label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+      .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+      .primary { border-color: var(--gold); color: var(--gold); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>crystal-lab</h1>
+      <div id="status">starting…</div>
+      <button id="btnEndpoint" class="iconbtn" type="button" title="Endpoint">🔌</button>
+      <button id="btnPorts" class="iconbtn" type="button" title="Ports">🎚</button>
+    </header>
+    <div class="row">
+      <button id="pick" type="button">Choose a folder</button>
+      <button id="ingest" type="button" disabled>Ingest</button>
+      <input id="q" placeholder="retrieve…" disabled />
+      <button id="go" type="button" disabled>Retrieve</button>
+      <button id="hop" type="button" disabled>Hop</button>
+      <button id="blast" type="button" disabled>Blast</button>
+    </div>
+    <div class="row" style="padding-top:0">
+      <input id="chatq" placeholder="ask your sources… (needs endpoint)" disabled />
+      <button id="ask" type="button" disabled>Ask</button>
+    </div>
+    <div id="path"></div>
+    <main>
+      <div id="stage">
+        <button id="flight" type="button" title="orbit / 6DOF flight">🛰 orbit</button>
+        <div id="mpcHud">
+          <div class="scan"></div>
+          <div class="title">▚ MPC MODE ▞</div>
+          <div class="score">SCORE <span data-score>0</span> · enter/tap shoot · esc leave</div>
+        </div>
+        <canvas id="g"></canvas>
+        <div id="tune">
+          <label>hub spread (LinLog) <b id="hubVal">4.0</b>
+            <input id="hubSpread" type="range" min="1" max="15" step="0.1" value="4" />
+          </label>
+          <label>glow <b id="glowVal">0.45</b>
+            <input id="glow" type="range" min="0" max="1.5" step="0.05" value="0.45" />
+          </label>
+        </div>
+        <aside id="detail" class="detail hidden"></aside>
+      </div>
+      <aside>
+        <h2>census / hits</h2>
+        <div id="side"></div>
+      </aside>
+    </main>
+    <div id="log"></div>
+
+    <div id="welcome" class="overlay">
+      <div class="sheet">
+        <h3>Do you have an OpenAI-compatible endpoint?</h3>
+        <p>Cloud or local. Without one, crystal-lab still links names across your files. With one, it assigns types and you can ask questions. A near-duplicate is flagged, not merged.</p>
+        <div class="actions">
+          <button id="welcomeYes" class="primary" type="button">Yes, let me set it up</button>
+          <button id="welcomeNo" type="button">No, continue</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="endpointSheet" class="overlay">
+      <div class="sheet">
+        <h3>Endpoint</h3>
+        <p>One URL. Cloud and local use the same fields.</p>
+        <label>URL</label>
+        <input id="epUrl" placeholder="http://127.0.0.1:11434/v1" />
+        <label>API key (optional for local)</label>
+        <input id="epKey" placeholder="sk-…" />
+        <label>Model name</label>
+        <input id="epModel" placeholder="llama3.2" />
+        <div class="actions">
+          <button id="epSave" class="primary" type="button">Save</button>
+          <button id="epClear" type="button">Remove</button>
+          <button id="epClose" type="button">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="portsSheet" class="overlay">
+      <div class="sheet">
+        <h3>Ports</h3>
+        <p>0 means pick a free port at next launch. 6333 and 8083 are reserved.</p>
+        <label>Qdrant (now <span id="nowQ">–</span>)</label>
+        <input id="portQ" type="number" min="0" max="65535" />
+        <label>Embed (now <span id="nowE">–</span>)</label>
+        <input id="portE" type="number" min="0" max="65535" />
+        <p id="portHint" style="font-size:12px"></p>
+        <div class="actions">
+          <button id="portSave" class="primary" type="button">Save for next launch</button>
+          <button id="portClose" type="button">Close</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
