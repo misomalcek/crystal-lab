@@ -60,10 +60,45 @@ Graph expansion is the Zep / Graphiti pattern: the graph produces a third
 ranked list, then RRF. This build does **RRF only** — not Zep's extra MMR
 or node-distance stages.
 
-## Caps
+## Limitations
 
-400 chunks / folder, 80 / file, PDF up to 32 MB. Images are graph nodes
-only (no OCR). Office files are counted, not parsed.
+This is a free app for a folder of notes or a small repository. It is not for
+a massive source tree or a large codebase. The stop is in the app, not in
+Qdrant. Past the caps below, ingest finishes and the log names what was cut.
+
+```
+400 chunks for the whole folder          extract.rs  MAX_CHUNKS
+80 chunks for one file                   extract.rs  MAX_CHUNKS_PER_FILE
+1 800 characters per chunk, 200 overlap  extract.rs  CHUNK_CHARS, CHUNK_OVERLAP
+2 MB of text in one file                 extract.rs  MAX_TEXT_BYTES
+32 MB for one PDF                        extract.rs  MAX_PDF_BYTES
+400 file nodes drawn                     graph.rs    MAX_GRAPH_NODES
+10 000 files walked                      census.rs   MAX_FILES
+```
+
+A chunk is about 1 800 characters of the file. Four hundred of them is the
+whole embedding. A small project fits. A large one stops at the first 400
+and the log says `truncated at 400 chunks`.
+
+Ingested as text, then embedded:
+
+```
+md txt html htm
+rs ts tsx js jsx mjs cjs py go java c h cpp cc hpp
+pdf   (text layer only)
+```
+
+Drawn, not embedded:
+
+```
+png jpg jpeg          graph node, no OCR
+doc docx ppt pptx     counted, not parsed
+```
+
+Skipped entirely: `node_modules`, `target`, `dist`, `.git`, any hidden
+directory, and names ending in `_files`. Import edges are drawn for
+`import`, `from`, `require(`, and a Rust `mod` declaration when the target
+file is in the folder.
 
 ## Build
 
